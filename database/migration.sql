@@ -24,6 +24,7 @@ CREATE TABLE hotels (
   admin_id    INT NOT NULL,
   status      ENUM('pending', 'verified', 'rejected') NOT NULL DEFAULT 'pending',
   rating_avg  DECIMAL(2,1) DEFAULT 0.0,
+  image       VARCHAR(255) DEFAULT NULL,
   created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (admin_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

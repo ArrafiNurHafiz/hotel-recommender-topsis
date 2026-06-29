@@ -46,7 +46,7 @@
                         <a href="/hotels/<?= $h->id ?>" class="text-decoration-none">
                             <div class="card hotel-card">
                                 <div class="overflow-hidden">
-                                    <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&q=80" class="card-img-top" alt="<?= htmlspecialchars($h->name) ?>">
+                                    <img src="<?= !empty($h->image) ? htmlspecialchars($h->image) : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&q=80' ?>" class="card-img-top" alt="<?= htmlspecialchars($h->name) ?>">
                                 </div>
                                 <div class="card-body">
                                     <h5 class="card-title text-dark"><?= htmlspecialchars($h->name) ?></h5>

@@ -7,7 +7,7 @@
     </nav>
 
     <div class="card mb-4 overflow-hidden">
-        <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200&q=80" class="card-img-top" style="height:350px;object-fit:cover;" alt="<?= htmlspecialchars($hotel->name) ?>">
+        <img src="<?= !empty($hotel->image) ? htmlspecialchars($hotel->image) : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200&q=80' ?>" class="card-img-top" style="height:350px;object-fit:cover;" alt="<?= htmlspecialchars($hotel->name) ?>">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
