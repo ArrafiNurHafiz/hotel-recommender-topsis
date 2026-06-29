@@ -1,32 +1,61 @@
-# Hotel Recommender - Entropy-TOPSIS
+<p align="center">
+  <img src="https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP"/>
+  <img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white" alt="MySQL"/>
+  <img src="https://img.shields.io/badge/Bootstrap-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white" alt="Bootstrap"/>
+  <img src="https://img.shields.io/badge/MVC-FF6F00?style=for-the-badge&logo=codeigniter&logoColor=white" alt="MVC"/>
+  <img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="MIT"/>
+</p>
 
-[![PHP Version](https://img.shields.io/badge/php-%5E7.4%20%7C%20%5E8.0-blue.svg)](https://www.php.net/)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+<p align="center">
+  <img src="https://capsule-render.vercel.app/api?type=waving&height=200&color=0:1a237e,100:0277bd&text=Hotel%20Recommender&fontColor=ffffff&fontAlign=50&fontAlignY=35&desc=Entropy-TOPSIS%20%7C%20MCDM%20%7C%20PHP%20MVC&descAlign=50&descAlignY=55"/>
+</p>
 
-Sistem Rekomendasi Hotel berbasis web yang mengimplementasikan metode **Entropy-TOPSIS** (MCDM) untuk merekomendasikan hotel terbaik berdasarkan posisi geografis pengguna.
+<p align="center">
+  Sistem Rekomendasi Hotel berbasis <b>Multi-Criteria Decision Making (MCDM)</b> yang menggabungkan<br>
+  <b>Shannon Entropy</b> untuk pembobotan dinamis dan <b>TOPSIS</b> untuk pemeringkatan rekomendasi hotel.
+</p>
 
 ---
 
-## Fitur Utama
+## ✨ Highlights
 
-- **User**: registrasi, login, rekomendasi hotel berbasis GPS, booking kamar, review & rating
-- **Admin Hotel**: dashboard, kelola kamar, kelola booking (konfirmasi/checkout/batal), lihat review
-- **Super Admin**: kelola user, verifikasi hotel, monitoring global
+| | | |
+|---|---|---|
+| 🎯 **Entropy-TOPSIS** | Bobot kriteria dihitung otomatis dari data — tanpa campur tangan manual | |
+| 📍 **Haversine Distance** | Jarak dihitung real-time dari koordinat GPS pengguna | |
+| 🏛️ **PHP MVC Pure** | Zero framework — arsitektur MVC murni, lightweight & cepat | |
+| 🧩 **3 Role System** | User → Admin Hotel → Super Admin, masing-masing dengan akses terpisah | |
+| 🗄️ **147 Hotel &#124; 441 Kamar** | Data realistik siap pakai dari seeder | |
 
 ---
 
-## Persyaratan Sistem
+## 🧠 Algoritma
 
-- PHP 7.4+
+```
+User Location → Hitung Jarak (Haversine) → Matriks Keputusan
+    → Shannon Entropy (bobot otomatis) → Matriks Terbobot
+    → TOPSIS (A+ / A-) → Ranking → Rekomendasi
+```
+
+| Kriteria | Tipe | Sumber |
+|---|---|---|
+| 💰 Harga Terendah | Cost | Harga kamar termurah |
+| ⭐ Rating Rata-rata | Benefit | Review pengguna |
+| 🏷️ Jumlah Fasilitas | Benefit | Fasilitas hotel |
+| 📏 Jarak Geografis | Cost | Haversine formula |
+| 🛌 Tingkat Okupansi | Cost | Keterisian kamar |
+
+---
+
+## 🚀 Instalasi
+
+### Prasyarat
+
+- PHP 7.4+ (ekstensi: `pdo_mysql`)
 - MySQL / MariaDB
 - Apache (`mod_rewrite`) atau PHP built-in server
-- ekstensi PHP: `pdo_mysql`, `bcrypt`
 
----
-
-## Instalasi
-
-### 1. Clone Repositori
+### 1. Clone
 
 ```bash
 git clone https://github.com/ArrafiNurHafiz/hotel-recommender-topsis.git
@@ -35,108 +64,133 @@ cd hotel-recommender-topsis
 
 ### 2. Konfigurasi Database
 
-Buka `config/database.php` dan sesuaikan kredensial MySQL:
-
 ```php
-return [
-    'host'     => 'localhost',
-    'dbname'   => 'hotel_recommendation',
-    'username' => 'root',          // ganti dengan user MySQL Anda
-    'password' => '',              // ganti dengan password MySQL Anda
-    'charset'  => 'utf8mb4',
-];
+// config/database.php
+'password' => getenv('DB_PASS') ?: '' // isi password MySQL kamu
 ```
 
-Atau gunakan environment variable: `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASS`.
+Atau pakai environment variable: `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASS`.
 
-### 3. Setup Database & Seed Data
-
-Jalankan script reset untuk membuat database, tabel, dan data contoh:
+### 3. Setup & Seed (1 Perintah)
 
 ```bash
 php database/reset.php
 ```
 
-Atau manual:
-1. Import `database/migration.sql` ke MySQL
-2. Jalankan `php database/seed.php`
+> Drop database lama → buat ulang → migrasi tabel → seed 20 hotel + 441 kamar.
 
-### 4. Jalankan Aplikasi
-
-**Via PHP built-in server:**
+### 4. Jalankan
 
 ```bash
 php -S localhost:8080
 ```
 
-**Via Apache:** pastikan `mod_rewrite` aktif dan `AllowOverride All` di konfigurasi VirtualHost.
-
-Buka browser: `http://localhost:8080`
+Buka **http://localhost:8080** 🎉
 
 ---
 
-## Akun Pengguna (Seeder)
+## 🔑 Akun Login
 
-### Super Admin
-| Email | Password |
-|---|---|
-| `superadmin@hotel.com` | `superadmin123` |
+### 👑 Super Admin
+```
+Email:       superadmin@hotel.com
+Password:    superadmin123
+```
 
-### Admin Hotel
-| Email | Password | Kelola Hotel |
+### 🏪 Admin Hotel
+| Email | Password | Mengelola |
 |---|---|---|
-| `admin.a@hotel.com` | `admina123` | Grand Hyatt, Mulia Senayan, Shangri-La, dll (10 hotel) |
-| `admin.b@hotel.com` | `adminb123` | Ritz-Carlton, Pullman, Padma Bandung, dll (10 hotel) |
+| `admin.a@hotel.com` | `admina123` | Grand Hyatt, Mulia Senayan, Shangri-La & 7 hotel lain |
+| `admin.b@hotel.com` | `adminb123` | Ritz-Carlton, Pullman, Padma Bandung & 7 hotel lain |
 
-### User Biasa
-| Email | Password |
-|---|---|
-| `user@hotel.com` | `user123` |
-
----
-
-## Rute Penting
-
-| URL | Keterangan |
-|---|---|
-| `/` | Beranda |
-| `/hotels` | Daftar hotel |
-| `/hotels/{id}` | Detail hotel |
-| `/recommendations?city=Jakarta` | Rekomendasi Entropy-TOPSIS |
-| `/login` | Login user |
-| `/register` | Registrasi user |
-| `/my-bookings` | Booking saya |
-| `/admin/login` | Login admin hotel |
-| `/admin/dashboard` | Dashboard admin hotel |
-| `/super-admin/login` | Login super admin |
-| `/super-admin/dashboard` | Dashboard super admin |
+### 👤 User Biasa
+```
+Email:       user@hotel.com
+Password:    user123
+```
 
 ---
 
-## Struktur Direktori
+## 🗺️ Rute Penting
+
+| URL | Akses | Fungsi |
+|---|---|---|
+| `/` | Public | Beranda |
+| `/hotels` | Public | Daftar hotel |
+| `/hotels/{id}` | Public | Detail hotel |
+| `/recommendations?city=Jakarta` | Public | Rekomendasi Entropy-TOPSIS |
+| `/login` | Guest | Login user |
+| `/register` | Guest | Registrasi user |
+| `/my-bookings` | User | Riwayat booking |
+| `/booking/{id}` | User | Form booking kamar |
+| `/admin/login` | Guest | Login admin hotel |
+| `/admin/dashboard` | Admin Hotel | Dashboard |
+| `/admin/rooms` | Admin Hotel | Kelola kamar |
+| `/admin/bookings` | Admin Hotel | Kelola booking |
+| `/admin/reviews` | Admin Hotel | Lihat review |
+| `/super-admin/login` | Guest | Login super admin |
+| `/super-admin/dashboard` | Super Admin | Dashboard |
+| `/super-admin/users` | Super Admin | Kelola user |
+| `/super-admin/hotels` | Super Admin | Verifikasi hotel |
+| `/super-admin/monitoring` | Super Admin | Monitoring global |
+
+---
+
+## 📁 Struktur Proyek
 
 ```
 ├── app/
-│   ├── controllers/       # Controller
-│   ├── models/            # Model
-│   ├── services/          # EntropyTopsis.php (algoritma)
-│   └── views/             # Template HTML
+│   ├── controllers/          # Logika bisnis
+│   ├── models/               # Query database per entitas
+│   ├── services/
+│   │   └── EntropyTopsis.php # ⚡ Algoritma inti
+│   └── views/                # Template Bootstrap 5
 ├── config/
-│   ├── app.php
-│   └── database.php
-├── core/                  # Router, Database PDO, Middleware
+│   ├── app.php               # Konfigurasi aplikasi
+│   └── database.php          # Koneksi MySQL via PDO
+├── core/                     # Router, Database, Middleware
 ├── database/
-│   ├── migration.sql      # Skema database
-│   ├── seed.php           # Seeder
-│   └── reset.php          # Reset + seed (satu langkah)
-├── public/                # CSS, JS, gambar
-├── routes.php
-├── .htaccess
-└── index.php
+│   ├── migration.sql         # Skema database
+│   ├── seed.php              # Data contoh (20 hotel)
+│   └── reset.php             # Reset + seed otomatis
+├── public/                   # CSS, JS, gambar
+├── routes.php                # Route definitions
+└── index.php                 # Entry point
 ```
 
 ---
 
-## Lisensi
+## ⚙️ Tech Stack
 
-MIT
+| Lapisan | Teknologi |
+|---|---|
+| **Backend** | PHP 8.4, Custom MVC, PDO |
+| **Database** | MySQL 8.4 |
+| **Frontend** | Bootstrap 5.3.3, Google Fonts |
+| **Algoritma** | Shannon Entropy + TOPSIS + Haversine |
+| **Auth** | BCrypt, Session-based |
+
+---
+
+## 📸 Screenshots
+
+| Halaman | Preview |
+|---|---|
+| **Beranda** | menampilkan hero & info sistem |
+| **Rekomendasi** | daftar hotel terurut skor TOPSIS |
+| **Dashboard Admin** | statistik & manajemen hotel |
+| **Super Admin** | monitoring global & verifikasi |
+
+> *Screenshots akan ditambahkan setelah deployment.*
+
+---
+
+<p align="center">
+  <sub>Built with ❤️ for Final Project | Arrafi Nur Hafiz</sub>
+</p>
+
+<p align="center">
+  <a href="https://github.com/ArrafiNurHafiz/hotel-recommender-topsis">
+    <img src="https://img.shields.io/github/stars/ArrafiNurHafiz/hotel-recommender-topsis?style=social"/>
+  </a>
+</p>
