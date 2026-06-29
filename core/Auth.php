@@ -32,20 +32,19 @@ class Auth
 
     public static function id(): ?int
     {
-        self::start();
-        return $_SESSION['user_id'] ?? null;
+        $user = self::user();
+        return $user ? (int)$user->id : null;
     }
 
     public static function role(): ?string
     {
-        self::start();
-        return $_SESSION['user_role'] ?? null;
+        $user = self::user();
+        return $user ? $user->role : null;
     }
 
     public static function check(): bool
     {
-        self::start();
-        return isset($_SESSION['user_id']);
+        return self::user() !== null;
     }
 
     public static function is(string $role): bool
