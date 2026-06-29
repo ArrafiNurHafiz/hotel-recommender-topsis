@@ -22,11 +22,12 @@ class Auth
         session_destroy();
     }
 
-public static function user(): ?object
+    public static function user(): ?object
     {
         self::start();
         if (!isset($_SESSION['user_id']) || !$_SESSION['user_id']) return null;
-        return Database::fetch("SELECT * FROM users WHERE id = ?", [$_SESSION['user_id']]);
+        $user = Database::fetch("SELECT * FROM users WHERE id = ?", [$_SESSION['user_id']]);
+        return $user ?: null;
     }
 
     public static function id(): ?int
