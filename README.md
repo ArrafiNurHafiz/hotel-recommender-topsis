@@ -186,7 +186,7 @@ Password:    user123
 ---
 
 <p align="center">
-  <sub>Built with ❤️ for Final Project | Arrafi Nur Hafiz</sub>
+  <sub>Built with for Final Project</sub>
 </p>
 
 <p align="center">
