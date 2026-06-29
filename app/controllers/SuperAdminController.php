@@ -10,8 +10,21 @@ class SuperAdminController extends Controller
             'total_bookings'   => Booking::count(),
             'total_reviews'    => (int) Database::query("SELECT COUNT(*) FROM reviews")->fetchColumn(),
             'verified_hotels'  => (int) Database::query("SELECT COUNT(*) FROM hotels WHERE status = 'verified'")->fetchColumn(),
+            'total_revenue'    => (int) (Database::query("SELECT COALESCE(SUM(total_price), 0) FROM bookings WHERE status = 'confirmed'")->fetchColumn()),
         ];
-        $this->view('super-admin/dashboard', ['title' => 'Dashboard Super Admin', 'stats' => $stats]);
+        $recentBookings = Database::fetchAll("
+            SELECT b.*, u.name as user_name, h.name as hotel_name
+            FROM bookings b
+            JOIN users u ON u.id = b.user_id
+            JOIN rooms r ON r.id = b.room_id
+            JOIN hotels h ON h.id = r.hotel_id
+            ORDER BY b.created_at DESC LIMIT 10
+        ");
+        $this->view('super-admin/dashboard', [
+            'title' => 'Dashboard Super Admin',
+            'stats' => $stats,
+            'recentBookings' => $recentBookings,
+        ]);
     }
 
     public function users(): void

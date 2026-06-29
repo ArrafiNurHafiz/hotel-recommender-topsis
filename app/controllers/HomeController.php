@@ -6,7 +6,7 @@ class HomeController extends Controller
         $hotels = Hotel::getVerified(1, 3);
         $this->view('home/index', [
             'hotels' => $hotels->items,
-            'title'  => 'Beranda',
+            'title' => 'Beranda',
         ]);
     }
 

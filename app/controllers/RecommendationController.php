@@ -5,19 +5,26 @@ class RecommendationController extends Controller
 {
     public function index(): void
     {
-        $userLat  = (float)($_GET['lat'] ?? -6.2088);
-        $userLng  = (float)($_GET['lng'] ?? 106.8456);
+        $validCities = [
+            'Jakarta', 'Bandung', 'Batam', 'Surabaya', 'Bali',
+            'Yogyakarta', 'Medan', 'Makassar', 'Semarang', 'Malang',
+            'Lombok', 'Palembang', 'Manado', 'Balikpapan', 'Pontianak',
+            'Pekanbaru', 'Solo', 'Labuan Bajo', 'Raja Ampat',
+        ];
 
-        $topsis = new EntropyTopsis($userLat, $userLng);
+        $city = $_GET['city'] ?? null;
+        if ($city && !in_array($city, $validCities)) {
+            $city = null;
+        }
+
+        $topsis  = new EntropyTopsis($city);
         $results = $topsis->calculate();
-        $userHasPreferences = isset($_GET['lat']);
 
         $this->view('recommendations/index', [
-            'title'    => 'Rekomendasi Hotel',
-            'results'  => $results,
-            'userPref' => $userHasPreferences,
-            'userLat'  => $userLat,
-            'userLng'  => $userLng,
+            'title'       => 'Rekomendasi Hotel',
+            'results'     => $results,
+            'city'        => $city,
+            'validCities' => $validCities,
         ]);
     }
 }

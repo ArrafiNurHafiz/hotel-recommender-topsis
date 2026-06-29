@@ -14,7 +14,7 @@ Router::get('/hotels', [HotelController::class, 'index']);
 Router::get('/hotels/{id}', [HotelController::class, 'show']);
 Router::get('/recommendations', [RecommendationController::class, 'index']);
 Router::get('/my-bookings', [BookingController::class, 'myBookings'], 'UserMiddleware');
-Router::get('/booking/{room_id}', [BookingController::class, 'create'], 'UserMiddleware');
+Router::get('/booking/{id}', [BookingController::class, 'create'], 'UserMiddleware');
 Router::post('/booking', [BookingController::class, 'store'], 'UserMiddleware');
 Router::post('/review', [ReviewController::class, 'store'], 'UserMiddleware');
 Router::post('/logout', [AuthController::class, 'logout']);

@@ -15,9 +15,12 @@ class ReviewController extends Controller
         }
 
         $room = Room::find($booking->room_id);
-        $existing = Database::fetch("SELECT id FROM reviews WHERE booking_id = ?", [$bookingId]);
+        $existing = Database::fetch(
+            "SELECT id FROM reviews WHERE user_id = ? AND hotel_id = ?",
+            [Auth::id(), $room->hotel_id]
+        );
         if ($existing) {
-            $_SESSION['flash'] = ['type' => 'warning', 'message' => 'Anda sudah memberikan review untuk booking ini'];
+            $_SESSION['flash'] = ['type' => 'warning', 'message' => 'Anda sudah memberikan review untuk hotel ini'];
             $this->back();
             return;
         }
@@ -28,12 +31,11 @@ class ReviewController extends Controller
             return;
         }
 
-        $reviewId = Review::create([
-            'booking_id' => $bookingId,
-            'user_id'    => Auth::id(),
-            'hotel_id'   => $room->hotel_id,
-            'rating'     => $rating,
-            'comment'    => $comment,
+        Review::create([
+            'user_id'  => Auth::id(),
+            'hotel_id' => $room->hotel_id,
+            'rating'   => $rating,
+            'comment'  => $comment,
         ]);
 
         Review::updateHotelRating($room->hotel_id);

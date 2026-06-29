@@ -5,7 +5,7 @@
             <a href="/super-admin/dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a>
             <a href="/super-admin/hotels"><i class="bi bi-building-check"></i> Verifikasi Hotel</a>
             <a href="/super-admin/users"><i class="bi bi-people"></i> Users</a>
-            <a href="/super-admin/reports" class="active"><i class="bi bi-bar-chart"></i> Monitoring</a>
+            <a href="/super-admin/monitoring" class="active"><i class="bi bi-bar-chart"></i> Monitoring</a>
             <a href="/" class="mt-3"><i class="bi bi-arrow-left"></i> Ke Website</a>
         </div>
         <div class="col-md-10 p-4">

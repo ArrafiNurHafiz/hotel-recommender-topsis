@@ -51,7 +51,7 @@ class Router
 
             [$class, $action] = $route['handler'];
             $controller = new $class();
-            $params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
+            $params = array_values(array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY));
             $controller->$action(...$params);
             return;
         }

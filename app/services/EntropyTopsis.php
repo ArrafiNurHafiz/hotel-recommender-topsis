@@ -1,40 +1,52 @@
 <?php
 class EntropyTopsis
 {
-    private float $userLat;
-    private float $userLng;
     private array $hotels = [];
     private array $matrix = [];
     private int $n; // alternatives
     private int $m; // criteria
 
-    // criterion: [index, name, type, weight_override(0=auto)]
+    // criterion: [column, name, type]
+    // type 'cost' = lower is better, 'benefit' = higher is better
     private array $criteria = [
-        ['price_start', 'Harga',       'cost',    0],
-        ['rating_avg',  'Rating',      'benefit', 0],
-        ['facilities_count', 'Fasilitas', 'benefit', 0],
-        ['distance', 'Jarak',       'cost',    0],
-        ['occupancy','Tingkat Keramaian', 'cost', 0],
+        ['price_start',      'Harga',          'cost'],
+        ['rating_avg',       'Rating',         'benefit'],
+        ['facilities_count', 'Fasilitas',      'benefit'],
+        ['occupancy',        'Tingkat Keramaian', 'cost'],
     ];
 
-    public function __construct(float $userLat, float $userLng)
+    private ?string $city;
+
+    public function __construct(?string $city = null)
     {
-        $this->userLat = $userLat;
-        $this->userLng = $userLng;
+        $this->city = $city;
     }
 
     public function calculate(): array
     {
         $this->loadHotels();
         if (empty($this->hotels)) return [];
+        if (count($this->hotels) < 2) {
+            // TOPSIS needs at least 2 alternatives; return single result with score=1
+            return [[
+                'hotel'   => $this->hotels[0],
+                'score'   => 1.0,
+                'd_pos'   => 0.0,
+                'd_neg'   => 0.0,
+                'weights' => [0.25, 0.25, 0.25, 0.25],
+                'rank'    => 1,
+            ]];
+        }
+
         $this->buildMatrix();
         $normalized = $this->normalize();
-        $weights = $this->entropyWeights($normalized);
-        $weighted = $this->weightedMatrix($normalized, $weights);
+        $weights    = $this->entropyWeights($normalized);
+        $weighted   = $this->weightedMatrix($normalized, $weights);
         [$idealPos, $idealNeg] = $this->idealSolutions($weighted);
-        $distances = $this->distance($weighted, $idealPos, $idealNeg);
-        $results = $this->rank($distances, $weights);
+        $distances  = $this->distance($weighted, $idealPos, $idealNeg);
+        $results    = $this->rank($distances, $weights);
 
+        // Persist to DB (only when user is logged in)
         $userId = Auth::id();
         if ($userId) {
             Database::delete('recommendations', 'user_id = ?', [$userId]);
@@ -54,35 +66,32 @@ class EntropyTopsis
 
     private function loadHotels(): void
     {
+        $whereExtra = '';
+        $params     = [];
+        if ($this->city) {
+            $whereExtra = " AND h.address LIKE ?";
+            $params[]   = '%' . $this->city . '%';
+        }
+
         $this->hotels = Database::fetchAll("
             SELECT h.*,
-                   (SELECT COUNT(*) FROM hotel_facilities WHERE hotel_id = h.id) as facilities_count
+                   (SELECT COUNT(*) FROM hotel_facilities WHERE hotel_id = h.id) AS facilities_count
             FROM hotels h
-            WHERE h.status = 'verified'
-        ");
+            WHERE h.status = 'verified'$whereExtra
+            ORDER BY h.id
+        ", $params);
 
         foreach ($this->hotels as $hotel) {
             $roomData = Database::fetch(
-                "SELECT COALESCE(SUM(total_room), 0) as total, COALESCE(SUM(occupied_room), 0) as occupied
+                "SELECT COALESCE(SUM(total_room),0) AS total, COALESCE(SUM(occupied_room),0) AS occupied
                  FROM rooms WHERE hotel_id = ?",
                 [$hotel->id]
             );
-            $occ = ($roomData && $roomData->total > 0) ? round(($roomData->occupied / $roomData->total) * 100) : 0;
+            $occ = ($roomData && $roomData->total > 0)
+                ? round(($roomData->occupied / $roomData->total) * 100)
+                : 0;
             $hotel->occupancy = (int)$occ;
-            $hotel->distance = $this->haversine(
-                $this->userLat, $this->userLng,
-                $hotel->latitude, $hotel->longitude
-            );
         }
-    }
-
-    private function haversine(float $lat1, float $lng1, float $lat2, float $lng2): float
-    {
-        $R = 6371;
-        $dLat = deg2rad($lat2 - $lat1);
-        $dLng = deg2rad($lng2 - $lng1);
-        $a = sin($dLat / 2) ** 2 + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLng / 2) ** 2;
-        return $R * 2 * atan2(sqrt($a), sqrt(1 - $a));
     }
 
     private function buildMatrix(): void
@@ -92,7 +101,7 @@ class EntropyTopsis
 
         foreach ($this->hotels as $i => $hotel) {
             foreach ($this->criteria as $j => $c) {
-                $this->matrix[$i][$j] = (float) $hotel->{$c[0]};
+                $this->matrix[$i][$j] = (float)$hotel->{$c[0]};
             }
         }
     }
@@ -115,7 +124,6 @@ class EntropyTopsis
 
     private function entropyWeights(array $normalized): array
     {
-        // normalisasi untuk entropy (sum = 1 per kolom)
         $p = [];
         for ($j = 0; $j < $this->m; $j++) {
             $colSum = array_sum(array_column($normalized, $j));
@@ -124,7 +132,7 @@ class EntropyTopsis
             }
         }
 
-        $k = 1 / log($this->n);
+        $k = $this->n > 1 ? 1 / log($this->n) : 0;
         $e = [];
         for ($j = 0; $j < $this->m; $j++) {
             $e[$j] = 0;
@@ -135,9 +143,9 @@ class EntropyTopsis
             }
         }
 
-        $d = array_map(fn($v) => 1 - $v, $e);
+        $d    = array_map(fn($v) => 1 - $v, $e);
         $dSum = array_sum($d);
-        $w = array_map(fn($v) => $dSum > 0 ? $v / $dSum : 0, $d);
+        $w    = array_map(fn($v) => $dSum > 0 ? $v / $dSum : 0, $d);
 
         return $w;
     }
@@ -158,8 +166,8 @@ class EntropyTopsis
         $idealPos = [];
         $idealNeg = [];
         for ($j = 0; $j < $this->m; $j++) {
-            $col = array_column($weighted, $j);
-            $isCost = $this->criteria[$j][2] === 'cost';
+            $col     = array_column($weighted, $j);
+            $isCost  = $this->criteria[$j][2] === 'cost';
             $idealPos[$j] = $isCost ? min($col) : max($col);
             $idealNeg[$j] = $isCost ? max($col) : min($col);
         }
@@ -188,13 +196,13 @@ class EntropyTopsis
     {
         $results = [];
         for ($i = 0; $i < $this->n; $i++) {
-            $sum = $distances[$i]['pos'] + $distances[$i]['neg'];
+            $sum   = $distances[$i]['pos'] + $distances[$i]['neg'];
             $score = $sum > 0 ? $distances[$i]['neg'] / $sum : 0;
             $results[] = [
-                'hotel' => $this->hotels[$i],
-                'score' => round($score, 5),
-                'd_pos' => round($distances[$i]['pos'], 5),
-                'd_neg' => round($distances[$i]['neg'], 5),
+                'hotel'   => $this->hotels[$i],
+                'score'   => round($score, 5),
+                'd_pos'   => round($distances[$i]['pos'], 5),
+                'd_neg'   => round($distances[$i]['neg'], 5),
                 'weights' => $weights,
             ];
         }
