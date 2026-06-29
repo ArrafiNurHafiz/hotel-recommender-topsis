@@ -36,7 +36,7 @@ class Database
 
     public static function insert(string $table, array $data): int
     {
-        $columns = implode(', ', array_keys($data));
+        $columns = implode(', ', array_map(fn($col) => "`$col`", array_keys($data)));
         $placeholders = ':' . implode(', :', array_keys($data));
         self::query("INSERT INTO $table ($columns) VALUES ($placeholders)", $data);
         return (int) self::getInstance()->lastInsertId();
@@ -44,7 +44,7 @@ class Database
 
     public static function update(string $table, array $data, string $where, array $params = []): int
     {
-        $sets = implode(', ', array_map(fn($col) => "$col = :$col", array_keys($data)));
+        $sets = implode(', ', array_map(fn($col) => "`$col` = :$col", array_keys($data)));
         $params = array_merge($data, $params);
         self::query("UPDATE $table SET $sets WHERE $where", $params);
         return self::query("SELECT ROW_COUNT()")->fetchColumn();

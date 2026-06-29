@@ -78,3 +78,16 @@ CREATE TABLE reviews (
   FOREIGN KEY (user_id)  REFERENCES users(id)  ON DELETE CASCADE,
   FOREIGN KEY (hotel_id) REFERENCES hotels(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE recommendations (
+  id            INT AUTO_INCREMENT PRIMARY KEY,
+  user_id       INT NOT NULL,
+  hotel_id      INT NOT NULL,
+  entropy_score DECIMAL(10,5) NOT NULL DEFAULT 0.00000,
+  topsis_score  DECIMAL(10,5) NOT NULL DEFAULT 0.00000,
+  `rank`        INT NOT NULL,
+  created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id)  REFERENCES users(id)  ON DELETE CASCADE,
+  FOREIGN KEY (hotel_id) REFERENCES hotels(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
